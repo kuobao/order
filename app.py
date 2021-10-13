@@ -7,7 +7,7 @@ from datetime import datetime
 import utils.rest_utils as rest_utils
 
 
-from application_services.imdb_artists_resource import IMDBArtistResource
+from application_services.ProductResource.product_resource import ProductResource
 from application_services.UsersResource.user_service import UserResource
 from database_services.RDBService import RDBService as RDBService
 
@@ -67,46 +67,48 @@ def demo(parameter1=None):
 def hello_world():
     return '<u>Hello World!</u>'
 
-
-@app.route('/gabrielle')
-def hello_gabrielle():
-    return '<u>Yay! Gabrielle is here!!!!!!!</u>'
-
-@app.route('/imdb/artists/<prefix>')
-def get_artists_by_prefix(prefix):
-    res = IMDBArtistResource.get_by_name_prefix(prefix)
-    rsp = Response(json.dumps(res), status=200, content_type="application/json")
-    return rsp
-
-
-@app.route('/users', methods=['GET', 'POST'])
-def user_collection():
+@app.route('/products', methods=['GET', 'POST'])
+def product_collection():
     """
     1. HTTP GET return all users.
     2. HTTP POST with body --> create a user, i.e --> database.
     :return:
     """
-    res = UserResource.get_by_template(None)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    inputs = rest_utils.RESTContext(request)
+    if inputs.method == 'GET':
+        template = inputs.args
+        res = ProductResource.get_by_template(template)
+        if res is not None:
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+        else:
+            rsp = Response("NOT FOUND", status=404, content_type="text/plain")
+    elif inputs.method == 'POST':
+        res = ProductResource.create(inputs.data)
+        rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
-@app.route('/users/<user_id>', methods=['GET', 'PUT', 'DELETE'])
-def specific_user(user_id):
-    """
-    1. Get a specific one by ID.
-    2. Update body and update.
-    3. Delete would ID and delete it.
-    :param user_id:
-    :return:
-    """
-    pass
-
-@app.route('/<db_schema>/<table_name>/<column_name>/<prefix>')
-def get_by_prefix(db_schema, table_name, column_name, prefix):
-    res = RDBService.get_by_prefix(db_schema, table_name, column_name, prefix)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+@app.route('/products/<product_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_product_by_id(product_id):
+    inputs = rest_utils.RESTContext(request)
+    if inputs.method == 'GET':
+        res = ProductResource.get_by_template({"id": product_id})
+        if res is not None:
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+        else:
+            rsp = Response("NOT FOUND", status=404, content_type="text/plain")
+    elif inputs.method == 'PUT':
+        res = ProductResource.update({"id": product_id}, inputs.data)
+        if res is not None:
+            rsp = Response("OK", status=200, content_type="text/plain")
+        else:
+            rsp = Response("NOT FOUND", status=404, content_type="text/plain")
+    elif inputs.method == 'DELETE':
+        res = ProductResource.delete({"id": product_id})
+        if res is not None:
+            rsp = Response("OK", status=200, content_type="text/plain")
+        else:
+            rsp = Response("NOT FOUND", status=404, content_type="text/plain")
     return rsp
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

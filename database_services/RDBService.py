@@ -84,9 +84,24 @@ class RDBService:
         return clause, args
 
     @classmethod
+    def get_set_clause_args(cls, t_json):
+
+        args = []
+        terms = []
+
+        for k,v in t_json.items():
+            args.append(v)
+            terms.append(k + "=%s")
+
+        clause = "set " + ", ".join(terms)
+
+        return clause, args
+
+
+    @classmethod
     def find_by_template(cls, db_schema, table_name, template, field_list):
 
-        wc,args = RDBService._get_where_clause_args(template)
+        wc,args = RDBService.get_where_clause_args(template)
 
         conn = RDBService._get_db_connection()
         cur = conn.cursor()
@@ -117,5 +132,24 @@ class RDBService:
         sql_stmt = "insert into " + db_schema + "." + table_name + " " + cols_clause + \
             " " + vals_clause
 
-        res = RDBService._run_sql(sql_stmt, args)
+        res = RDBService.run_sql(sql_stmt, args)
+        return res
+
+    @classmethod
+    def update(cls, db_schema, table_name, template, row):
+        set_clause, set_args = RDBService.get_set_clause_args(row)
+        wc, args = RDBService.get_where_clause_args(template)
+
+        q = "UPDATE  " + db_schema + "." + table_name + " " + set_clause + " " + wc
+
+        res = RDBService.run_sql(q, set_args+args)
+        return res
+
+    @classmethod
+    def delete(cls, db_schema, table_name, template):
+        wc, args = RDBService.get_where_clause_args(template)
+
+        q = "DELETE from " + db_schema + "." + table_name + " " + wc
+
+        res = RDBService.run_sql(q, args)
         return res
