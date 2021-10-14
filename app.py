@@ -92,19 +92,19 @@ def get_product_by_id(order_id):
     inputs = rest_utils.RESTContext(request)
     if inputs.method == 'GET':
         res = OrderResource.get_by_template({"id": order_id})
-        if res:
+        if res is not None:
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
         else:
             rsp = Response("NOT FOUND", status=404, content_type="text/plain")
     elif inputs.method == 'PUT':
         res = OrderResource.update({"id": order_id}, inputs.data)
-        if res:
+        if res is not None:
             rsp = Response("OK", status=200, content_type="text/plain")
         else:
             rsp = Response("NOT FOUND", status=404, content_type="text/plain")
     elif inputs.method == 'DELETE':
         res = OrderResource.delete({"id": order_id})
-        if res:
+        if res is not None:
             rsp = Response("OK", status=200, content_type="text/plain")
         else:
             rsp = Response("NOT FOUND", status=404, content_type="text/plain")

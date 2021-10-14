@@ -31,9 +31,9 @@ def get_db_info():
         }
     """
     db_info = {
-        "host": "orderdb.clboe01dd0s5.us-east-2.rds.amazonaws.com",
-        "user": "admin",
-        "password": "Himalayas2021",
+        "host": "e6156-rds.clboe01dd0s5.us-east-2.rds.amazonaws.com",
+        "user": "root",
+        "password": "rootroot",
         "cursorclass": pymysql.cursors.DictCursor
     }
     return db_info
